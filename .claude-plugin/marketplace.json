@@ -1,0 +1,10 @@
+{
+  "name": "triad",
+  "title": "Triad — Multi-Agent TDD Orchestrator",
+  "description": "Orchestrates 8 specialized agents through a strict TDD cycle: DESIGN > RED > GREEN > REFACTOR > QUALITY. Stack-agnostic — reads your CLAUDE.md for project conventions.",
+  "tags": ["tdd", "testing", "agents", "workflow", "orchestrator"],
+  "source": {
+    "type": "github",
+    "url": "https://github.com/batidiane/triad"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@batidiane/triad",
+  "version": "1.0.0",
+  "description": "Multi-agent TDD orchestrator plugin for Claude Code",
+  "author": "batidiane",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/batidiane/triad.git"
+  },
+  "keywords": ["claude-code-plugin", "tdd", "agents", "orchestrator"]
+}
