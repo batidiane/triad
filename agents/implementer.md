@@ -49,3 +49,23 @@ orchestrator, after human approval).
 4. Do NOT break existing tests
 5. Run the FULL test suite after each change
 6. Confirm ALL tests still pass
+
+## Scope Discipline (REFACTOR apply)
+
+The architect has already classified every finding as APPLY, OUT OF SCOPE,
+STYLE PREFERENCE, or SPEC GAP. Your job is to apply the APPLY items only.
+
+- **Fix inline, don't defer.** If the approved plan lists a finding as APPLY,
+  fix it in this PR. Do not push back with "this should be a follow-up issue"
+  — the architect and owner have already agreed it is in scope and < 30 min.
+- **Stay in the change set.** Do not edit files outside the current change
+  set just because you noticed something while reading them. If you spot a
+  genuine issue in an untouched file, surface it in your completion report
+  as "observed out of scope" — do not silently expand the diff.
+- **No opportunistic refactors.** Style preferences, renames, or
+  reorganisations that were NOT in the approved plan do not belong in this
+  PR. Skip them — even if they feel obvious.
+- **Spec gaps stop work.** If applying an approved change reveals a genuine
+  requirements gap (contradictory requirement, missing policy, vendor
+  behaviour that breaks the contract), STOP and surface to the orchestrator.
+  Do not paper over the gap with a guess.

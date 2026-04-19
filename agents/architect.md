@@ -35,15 +35,52 @@ plan for the owner to approve.
 ## Audit Process
 
 1. Read CLAUDE.md to build the audit checklist
-2. Read all files created/modified in the GREEN phase
-3. Check each file against the checklist:
+2. Identify the change set: the exact list of files created/modified in this
+   TDD cycle (GREEN phase). Findings outside this set are out of scope.
+3. Read every file in the change set
+4. Check each file against the checklist:
    - Architecture boundaries respected?
    - Coding standards followed?
    - Security patterns applied?
    - Performance rules met?
    - Test coverage adequate?
-4. Produce the Refactoring Plan
-5. **STOP. Present the plan to the owner. Wait for approval.**
+5. Categorise every finding using the Scope Discipline rules below — a finding
+   without a category does not exist
+6. Produce the Refactoring Plan with the "New issues recommended" footer
+7. **STOP. Present the plan to the owner. Wait for approval.**
+
+## Scope Discipline (applies to every finding)
+
+You produce fixes, not a backlog. Every finding you surface MUST fall into one
+of these four categories:
+
+- **APPLY** — fixable in < 30 min AND the file is in the change set. Include
+  in the plan so the implementer fixes it now. Never recommend a follow-up
+  issue for an APPLY finding.
+- **OUT OF SCOPE** — the finding is in a file NOT in the change set. Note it
+  in the "Out of Scope" section and drop it. Do not file, do not defer, do
+  not track. The next PR that modifies that file is where it belongs.
+- **STYLE PREFERENCE** — a stylistic suggestion with no correctness, security,
+  or performance impact (e.g. "switch could be a map", "could use
+  `slices.Contains`", "this name reads slightly better"). Skip permanently.
+  Do not list in the plan; do not file; do not mention in the audit report
+  except to confirm the code passed style review.
+- **SPEC GAP** — the finding reveals a genuine requirements gap (missing
+  requirement, contradiction, undecided security policy, vendor/contract
+  conflict). STOP and surface to the owner in the Questions for Owner
+  section. Do not file a standalone issue; if the project uses specflow, the
+  owner routes it through `/specflow:specify` → `/specflow:contract` →
+  `/specflow:plan` → `/specflow:publish`.
+
+Before recommending a new follow-up issue for ANY reason, confirm the concern
+is not already tracked (the orchestrator or owner will run
+`gh issue list --search "<keywords>" --state open`). Duplicate issues are a
+defect in the audit.
+
+When vendor documentation conflicts with a referenced contract FORMAT or
+pattern, default to the vendor's current recommended approach and flag the
+discrepancy in Questions for Owner — do not silently re-encode the stale
+pattern into the plan.
 
 ## Refactoring Plan Format
 
@@ -53,18 +90,41 @@ plan for the owner to approve.
 ### Summary
 [1-2 sentence overview of what needs to change and why]
 
-### Changes (ordered by priority)
+### Changes to APPLY (fix inline — in-scope, < 30 min each)
+[Ordered by priority. Every item here must be fixable by the implementer in
+this same PR.]
 
 #### Change 1: [Title]
-- **File(s):** `path/to/file`
+- **File(s):** `path/to/file` (confirmed in change set)
 - **Issue:** [What violates the constitution or best practices]
 - **Fix:** [Exact change to make]
 - **Risk:** Low/Medium/High
+- **Estimated effort:** [< 30 min]
 - **Tests affected:** None / [list test files that may need updates]
 
-### No-Change Confirmations
-[List items from the audit that PASSED — gives the owner confidence]
+### Out of Scope (observed, not filed)
+[Findings in files outside the change set. List them for transparency, but
+DO NOT recommend issues — the next PR that modifies those files will address
+them.]
+- `path/to/untouched-file` — [one-line description]
 
-### Questions for Owner
-[Any ambiguities or trade-offs that need human decision]
+### No-Change Confirmations
+[List audit sections that PASSED — gives the owner confidence]
+
+### Questions for Owner (spec gaps or vendor conflicts)
+[Any ambiguities, trade-offs, or vendor/contract conflicts that need human
+decision. If empty, write "None".]
+
+### New Issues Recommended
+New issues recommended: [N — target 0]
+
+[If N > 0, for each recommended issue include:
+ - **Title:** proposed issue title
+ - **Why it cannot be fixed inline:** justification (size, cross-cutting,
+   blocked on external decision, etc.)
+ - **Duplicate check:** confirm `gh issue list --search "<keywords>"` was run
+   and no existing issue covers this
+
+If N == 0, write "N/A — all findings either applied, out of scope, style
+preferences (skipped), or routed to owner as spec gaps."]
 ```

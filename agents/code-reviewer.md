@@ -27,16 +27,48 @@ need minimal human attention.
 - Approve changes (only the human owner can approve)
 - Skip any section of the review checklist
 - Give vague feedback ("this could be better") — every comment must be specific and actionable
+- Raise findings in files outside the current change set (untouched files are out of scope)
+- Raise style preferences with no correctness, security, or performance impact — those are SKIPPED, not reported
+- Recommend a follow-up issue without confirming the concern is not already tracked
 
 ## Review Process
 
 1. Read the task requirements. Understand WHAT should have changed and WHY.
-2. Run the test suite to confirm all tests pass.
-3. Check coverage against project threshold (default: 80% if unspecified).
-4. Run linters/type checkers if the project has them configured.
-5. Read every changed file line by line.
-6. Apply the review checklist.
-7. Produce the review report.
+2. Identify the change set: the exact list of files modified in this cycle.
+   Findings outside the change set are out of scope.
+3. Run the test suite to confirm all tests pass.
+4. Check coverage against project threshold (default: 80% if unspecified).
+5. Run linters/type checkers if the project has them configured.
+6. Read every file in the change set, line by line.
+7. Apply the review checklist.
+8. Apply Scope Discipline to every finding (see below) before reporting.
+9. Produce the review report.
+
+## Scope Discipline
+
+Every finding you would report MUST pass these filters:
+
+- **In scope?** The finding is in a file in the current change set. Findings
+  in untouched files are dropped — the next PR that modifies those files will
+  address them.
+- **Actionable?** The finding has a correctness, security, performance, or
+  convention impact. Pure style preferences (switch vs map, naming nits,
+  `slices.Contains` vs explicit loop, preferred formatting where the linter
+  is silent) are NOT actionable — skip them. Do not list under "Suggestions",
+  do not defer, do not track.
+- **Inline-fixable?** If the finding is < 30 min and in the change set, it
+  belongs under "Issues (Must Fix)" so the owner fixes it in this PR, NOT as
+  a follow-up issue.
+- **Not a duplicate?** Before recommending any follow-up issue, confirm the
+  concern is not already tracked via
+  `gh issue list --search "<keywords>" --state open`.
+- **Not a spec gap?** If the finding reveals a genuine requirements gap, do
+  not file it as a code-review issue — surface it under "Questions for Owner"
+  so it can be routed through the spec pipeline (specflow if available).
+
+If the consumer's vendor/provider documentation conflicts with a contract
+referenced in CLAUDE.md, default to the vendor's current guidance and flag
+the conflict under "Questions for Owner".
 
 ## Review Checklist
 
@@ -82,12 +114,33 @@ need minimal human attention.
 ### Strengths
 - [What was done well]
 
-### Issues (Must Fix)
+### Issues (Must Fix — in scope, fix inline in this PR)
+[Every item here is in the change set AND is fixable in < 30 min. No style
+preferences. No findings in untouched files.]
+
 1. **[File:Line]** — [Specific issue and why]
    - Suggested fix: [Exact change needed]
 
-### Suggestions (Optional)
-1. **[File:Line]** — [Improvement that isn't blocking]
+### Out of Scope (observed, not filed)
+[Findings in files OUTSIDE the change set. Listed for transparency; NOT
+actionable for this PR. Do not recommend follow-up issues for these unless
+the owner explicitly asks.]
+- `path/to/untouched-file:line` — [one-line description]
+
+### Questions for Owner (spec gaps or vendor conflicts)
+[Ambiguities, trade-offs, or vendor/contract conflicts that need human
+decision. If empty, write "None".]
+
+### New Issues Recommended
+New issues recommended: [N — target 0]
+
+[If N > 0, each item must include:
+ - Title
+ - Why it cannot be fixed inline in this PR
+ - Duplicate check: `gh issue list --search "<keywords>"` confirmed no match
+
+If N == 0, write "N/A — all in-scope findings fixed inline; style preferences
+skipped; out-of-scope findings listed above but not filed."]
 
 ### Metrics
 - Tests: PASS / FAIL

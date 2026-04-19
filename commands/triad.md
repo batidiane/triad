@@ -106,6 +106,34 @@ Handoff the REFACTOR audit to `@architect`.
 Constraints:
 - Audit the GREEN implementation against the CLAUDE.md constitution
 - Generate a strict **Refactoring Plan** with the prescribed format
+- Apply the REFACTOR Scope Rules below when categorising findings
+
+#### REFACTOR Scope Rules
+
+The REFACTOR phase produces fixes, not follow-up issues. Every finding the
+architect surfaces MUST be categorised as one of:
+
+- **APPLY (inline)** — the finding can be fixed in < 30 min AND touches files
+  already in the current change set. Include it in the plan so the implementer
+  fixes it now. Do NOT recommend a follow-up issue for it.
+- **OUT OF SCOPE (skip)** — the finding is in a file outside the current change
+  set. Note it as "out of scope (untouched file)" in the audit report, then
+  drop it. Do not file, do not defer, do not track. The next PR that modifies
+  that file is where it belongs.
+- **STYLE PREFERENCE (skip)** — a stylistic suggestion with no correctness,
+  security, or performance impact (e.g. "switch could be a map",
+  "could use `slices.Contains`"). Skip permanently — do not file, do not defer,
+  do not track.
+- **SPEC GAP (pause)** — the finding reveals a genuine requirements gap
+  (missing requirement, contradiction, undecided security policy). STOP and
+  surface to the owner. If the consumer project uses specflow, route through
+  its `/specflow:specify` → `/specflow:contract` → `/specflow:plan` →
+  `/specflow:publish` pipeline. Do NOT create standalone GitHub issues for
+  spec gaps.
+
+The architect's audit report MUST end with:
+`New issues recommended: [count]` — target is 0. If count > 0, each MUST
+include a justification for why it cannot be fixed inline in the current PR.
 
 **CRITICAL GATE (Human-in-the-Loop):**
 Stop here. Present the Refactoring Plan to the user. Ask which changes to
@@ -169,6 +197,11 @@ Output a summary of the Triad loop:
 
 ### Open Items
 - [Any Medium/Low findings to track]
+
+### Scope Accounting
+- New issues recommended: [count — target 0]
+- Justifications: [one line per recommended issue, or "N/A — all findings fixed inline or skipped per Scope Discipline rules"]
+- Vendor/spec conflicts flagged: [none, or describe each]
 ```
 
 ## Behavior Rules
@@ -187,3 +220,11 @@ Output a summary of the Triad loop:
 4. **Constitution as Authority:** CLAUDE.md is loaded into every agent's context. It is the supreme authority for all conventions, patterns, and rules.
 5. **No Nesting:** Subagents cannot spawn other subagents. Each agent completes its work and returns results to the orchestrator.
 6. **Cross-Cutting Tasks:** A single task touching multiple domains runs through ONE triad loop — do not split into separate loops.
+7. **Scope Discipline:** Every triad loop is bounded by the files it touches and the requirements it was given.
+   - **Fix inline, don't defer.** Findings < 30 min that touch in-scope files are fixed in the current loop, not filed as issues.
+   - **Zero new issues is the target.** Every follow-up issue a triad loop produces is scope creep until justified. The completion report MUST state how many new issues were recommended and why each was unavoidable.
+   - **Search before creating.** Before recommending ANY new issue, the orchestrator (or owner) MUST run `gh issue list --search "<keywords>" --state open` and verify no existing issue covers the concern. Duplicate issues are a defect.
+   - **Style preferences are not findings.** Suggestions with no correctness, security, or performance impact (switch vs map, naming nits in untouched files, `slices.Contains` vs explicit loop) are SKIPPED — not filed, not deferred, not tracked.
+   - **Don't touch what you didn't break.** Findings in files outside the current change set are out of scope. They belong to the next PR that modifies those files.
+   - **Spec gaps use specflow, not issues.** If the audit reveals a genuine spec gap, pause and surface to the owner. When the consumer project uses specflow, route through `/specflow:specify` → `/specflow:contract` → `/specflow:plan` → `/specflow:publish`. Never create a standalone GitHub issue for a spec gap.
+   - **Vendor docs over contract specs on conflict.** When a provider's current documentation conflicts with the contract's FORMAT or patterns, follow the vendor's recommended approach and flag the discrepancy in the completion report. Check live documentation before assuming a referenced pattern is still current.

@@ -40,6 +40,36 @@ The orchestrator stops and waits for your approval at:
 - **Phase 5** — You review and approve/modify/reject the refactoring plan
 - **Phase 7** — If Critical/High issues are found, you decide how to proceed
 
+## Scope Discipline
+
+Every triad loop is bounded. The orchestrator, architect, code reviewer, and
+implementer all enforce the same rules so one loop produces one PR with no
+hidden backlog:
+
+- **Fix inline, don't defer.** Findings under 30 minutes that touch files
+  already in the change set are fixed in the current loop — not filed as
+  follow-up issues.
+- **Target zero new issues per loop.** Every recommended issue must be
+  justified (size, cross-cutting, blocked on external decision) and
+  deduped against existing issues first.
+- **Out of scope means skip.** Findings in files the loop did not modify are
+  listed for transparency but NOT filed. The next PR that touches those
+  files is where they belong.
+- **Style preferences are skipped permanently.** "Switch could be a map",
+  "could use `slices.Contains`", formatting nits where the linter is
+  silent — none of these are findings.
+- **Spec gaps pause the loop.** Missing requirements, contradictions, or
+  undecided policies are surfaced to the owner. If you use
+  [specflow](https://github.com/batidiane/specflow), they route through
+  `/specflow:specify` → `/specflow:contract` → `/specflow:plan` →
+  `/specflow:publish` — never as standalone issues.
+- **Vendor docs win on conflict.** When provider documentation contradicts a
+  referenced contract, the loop follows the vendor's current guidance and
+  flags the discrepancy in the completion report.
+
+The final completion report always includes a "New issues recommended: [N]"
+line — the target is 0.
+
 ## CLAUDE.md Integration
 
 Every agent reads your project's `CLAUDE.md` at the start of its task. Define your:
